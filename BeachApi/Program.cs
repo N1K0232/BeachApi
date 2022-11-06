@@ -9,6 +9,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using OperationResults.AspNetCore;
+using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Net.Mime;
 using System.Reflection;
@@ -23,6 +24,11 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
+        {
+            loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration);
+        });
 
         builder.Services.AddProblemDetails();
         builder.Services.AddMemoryCache();
@@ -124,6 +130,11 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseSerilogRequestLogging(options =>
+        {
+            options.IncludeQueryInRequestPath = true;
+        });
 
         app.UseEndpoints(endpoints =>
         {
