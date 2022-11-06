@@ -1,17 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
-  </ItemGroup>
+		<ItemGroup>
+				<PackageReference Include="Hellang.Middleware.ProblemDetails" Version="6.5.1" />
+				<PackageReference Include="MicroElements.Swashbuckle.FluentValidation" Version="5.7.0" />
+				<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
+				<PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.1" />
+				<PackageReference Include="OperationResultTools.AspNetCore" Version="1.0.12" />
+				<PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+				<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+		</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BeachApi.Authorization\BeachApi.Authorization.csproj" />
-    <ProjectReference Include="..\BeachApi.BusinessLayer\BeachApi.BusinessLayer.csproj" />
-  </ItemGroup>
+		<ItemGroup>
+				<ProjectReference Include="..\BeachApi.Authorization\BeachApi.Authorization.csproj" />
+				<ProjectReference Include="..\BeachApi.BusinessLayer\BeachApi.BusinessLayer.csproj" />
+				<ProjectReference Include="..\BeachApi.Logging\BeachApi.Logging.csproj" />
+		</ItemGroup>
 
 </Project>

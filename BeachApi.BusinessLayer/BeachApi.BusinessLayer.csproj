@@ -1,8 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+		<ItemGroup>
+				<PackageReference Include="AutoMapper" Version="12.0.0" />
+				<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+				<PackageReference Include="FluentValidation" Version="11.2.2" />
+				<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.2.2" />
+				<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
+				<PackageReference Include="OperationResultTools" Version="1.0.8" />
+				<PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.20" />
+		</ItemGroup>
+
+		<ItemGroup>
+				<ProjectReference Include="..\BeachApi.Authentication\BeachApi.Authentication.csproj" />
+				<ProjectReference Include="..\BeachApi.DataAccessLayer\BeachApi.DataAccessLayer.csproj" />
+				<ProjectReference Include="..\BeachApi.Security\BeachApi.Security.csproj" />
+				<ProjectReference Include="..\BeachApi.Shared\BeachApi.Shared.csproj" />
+				<ProjectReference Include="..\BeachApi.SharedServices\BeachApi.SharedServices.csproj" />
+				<ProjectReference Include="..\BeachApi.StorageProviders\BeachApi.StorageProviders.csproj" />
+		</ItemGroup>
 
 </Project>

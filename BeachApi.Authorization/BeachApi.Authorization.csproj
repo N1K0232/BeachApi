@@ -1,8 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+		
+    <ItemGroup>
+		    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+		    <ProjectReference Include="..\BeachApi.Authentication\BeachApi.Authentication.csproj" />
+    </ItemGroup>
 
 </Project>
