@@ -1,20 +1,33 @@
+using System.Net.Mime;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using BeachApi.Authentication;
+using BeachApi.Authentication.Entities;
+using BeachApi.Authentication.Settings;
+using BeachApi.Authentication.StartupTasks;
+using BeachApi.Authorization.Handlers;
+using BeachApi.Authorization.Requirements;
+using BeachApi.BusinessLayer.Services;
+using BeachApi.BusinessLayer.Services.Interfaces;
 using BeachApi.Documentation;
 using BeachApi.Security;
 using Hellang.Middleware.ProblemDetails;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OperationResults.AspNetCore;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Net.Mime;
-using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using TinyHelpers.Json.Serialization;
 
 namespace BeachApi;
@@ -33,6 +46,10 @@ public class Program
         builder.Services.AddProblemDetails();
         builder.Services.AddMemoryCache();
         builder.Services.AddOperationResult();
+        builder.Services.AddUserClaimService();
+
+        builder.Services.AddMapperProfiles();
+        builder.Services.AddFluentValidation();
 
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
@@ -88,10 +105,68 @@ public class Program
 
             options.CustomOperationIds(api => $"{api.ActionDescriptor.RouteValues["controller"]}_{api.ActionDescriptor.RouteValues["action"]}");
             options.UseAllOfToExtendReferenceSchemas();
+        })
+        .AddFluentValidationRulesToSwagger(options =>
+        {
+            options.SetNotNullableIfMinLengthGreaterThenZero = true;
         });
 
         var hashedConnectionString = builder.Configuration.GetConnectionString("SqlConnection");
         var connectionString = StringHasher.GetString(hashedConnectionString);
+
+        builder.Services.AddSqlServer<AuthenticationDataContext>(connectionString);
+        builder.Services.AddIdentity<AuthenticationUser, AuthenticationRole>(options =>
+        {
+            options.User.RequireUniqueEmail = true;
+            options.Password.RequiredLength = 8;
+            options.Password.RequireNonAlphanumeric = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireDigit = true;
+        })
+        .AddEntityFrameworkStores<AuthenticationDataContext>()
+        .AddDefaultTokenProviders();
+
+        var jwtSection = builder.Configuration.GetSection(nameof(JwtSettings));
+        var jwtSettings = jwtSection.Get<JwtSettings>();
+        builder.Services.Configure<JwtSettings>(jwtSection);
+
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidAudience = jwtSettings.Audience,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(jwtSettings.SecurityKey)),
+                RequireExpirationTime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
+        builder.Services.AddAuthorization(options =>
+        {
+            var policyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser();
+            policyBuilder.Requirements.Add(new UserActiveRequirement());
+
+            var policy = policyBuilder.Build();
+            options.FallbackPolicy = options.DefaultPolicy = policy;
+
+            options.AddPolicy("UserActive", policy =>
+            {
+                policy.Requirements.Add(new UserActiveRequirement());
+            });
+        });
+
+        builder.Services.AddScoped<IAuthorizationHandler, UserActiveHandler>();
 
         builder.Services.AddHealthChecks().AddAsyncCheck("sql", async () =>
         {
@@ -107,6 +182,11 @@ public class Program
 
             return HealthCheckResult.Healthy();
         });
+
+        builder.Services.AddScoped<IUserService, UserService>();
+
+        builder.Services.AddHostedService<AuthenticationStartupTask>();
+
 
         var app = builder.Build();
 
