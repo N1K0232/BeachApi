@@ -1,46 +1,30 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using BeachApi.Logging.Entities;
 using Serilog.Core;
 using Serilog.Events;
-using System.Data;
 
 namespace BeachApi.Logging;
 
 public sealed class SqlSink : ILogEventSink
 {
-	private readonly string connectionString;
+    private readonly LoggingDataContext dataContext;
 
-	public SqlSink(string connectionString)
-	{
-		this.connectionString = connectionString;
-	}
+    public SqlSink(LoggingDataContext dataContext)
+    {
+        this.dataContext = dataContext;
+    }
 
-	public void Emit(LogEvent logEvent)
-	{
-		using var connection = new SqlConnection(connectionString);
-		connection.Open();
 
-		var commandText = "INSERT INTO Logs(Message, Level, TimeStamp, Exception) ";
-		commandText += "VALUES(@Message,@Level,@TimeStamp,@Exception)";
+    public void Emit(LogEvent logEvent)
+    {
+        var log = new Log
+        {
+            Message = logEvent.RenderMessage(),
+            Level = logEvent.Level,
+            TimeStamp = logEvent.Timestamp.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+            Exception = logEvent.Exception?.ToString()
+        };
 
-		using var command = connection.CreateCommand();
-		command.CommandText = commandText;
-
-		AddParameter("Message", DbType.String, logEvent.RenderMessage());
-		AddParameter("Level", DbType.String, logEvent.Level);
-		AddParameter("Timestamp", DbType.String, logEvent.Timestamp.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss"));
-		AddParameter("Exception", DbType.String, logEvent.Exception?.ToString());
-
-		command.ExecuteNonQuery();
-		connection.Close();
-
-		void AddParameter(string parameterName, DbType type, object value)
-		{
-			var parameter = command.CreateParameter();
-			parameter.ParameterName = parameterName;
-			parameter.DbType = type;
-			parameter.Value = value ?? DBNull.Value;
-
-			command.Parameters.Add(parameter);
-		}
-	}
+        dataContext.Logs.Add(log);
+        dataContext.SaveChanges();
+    }
 }

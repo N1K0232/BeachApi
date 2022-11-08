@@ -16,7 +16,9 @@ public static class LoggerConfigurationExtensions
         var hashedConnectionString = configuration.GetConnectionString("SqlConnection");
         var connectionString = StringHasher.GetString(hashedConnectionString);
 
-        var sink = new SqlSink(connectionString);
+        var dataContext = new LoggingDataContext(connectionString);
+        var sink = new SqlSink(dataContext);
+
         return sinkConfiguration.Sink(sink, restrictedToMinimumLevel, levelSwitch);
     }
 }
