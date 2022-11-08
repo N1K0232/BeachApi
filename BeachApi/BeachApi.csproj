@@ -21,6 +21,7 @@
 				<ProjectReference Include="..\BeachApi.Authorization\BeachApi.Authorization.csproj" />
 				<ProjectReference Include="..\BeachApi.BusinessLayer\BeachApi.BusinessLayer.csproj" />
 				<ProjectReference Include="..\BeachApi.Logging\BeachApi.Logging.csproj" />
+				<ProjectReference Include="..\BeachApi.WeatherClient\BeachApi.WeatherClient.csproj" />
 		</ItemGroup>
 
 </Project>
