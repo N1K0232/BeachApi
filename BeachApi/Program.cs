@@ -11,6 +11,7 @@ using BeachApi.Authorization.Handlers;
 using BeachApi.Authorization.Requirements;
 using BeachApi.BusinessLayer.Services;
 using BeachApi.BusinessLayer.Services.Interfaces;
+using BeachApi.DataAccessLayer;
 using BeachApi.Documentation;
 using BeachApi.Security;
 using Hellang.Middleware.ProblemDetails;
@@ -113,6 +114,12 @@ public class Program
 
         var hashedConnectionString = builder.Configuration.GetConnectionString("SqlConnection");
         var connectionString = StringHasher.GetString(hashedConnectionString);
+
+        builder.Services.AddSqlServer<ApplicationDataContext>(connectionString);
+        builder.Services.AddScoped<IApplicationDataContext>(serviceProvider =>
+        {
+            return serviceProvider.GetRequiredService<ApplicationDataContext>();
+        });
 
         builder.Services.AddSqlServer<AuthenticationDataContext>(connectionString);
         builder.Services.AddIdentity<AuthenticationUser, AuthenticationRole>(options =>
