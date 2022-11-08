@@ -53,7 +53,11 @@ public class ApplicationDataContext : AuthenticationDataContext, IApplicationDat
         return ExistsAsyncInternal<T>(predicate);
     }
 
-    public Task<T> GetAsync<T>(Guid id) where T : BaseEntity => throw new NotImplementedException();
+    public Task<T> GetAsync<T>(Guid id) where T : BaseEntity
+    {
+        var set = Set<T>();
+        return set.FindAsync(id).AsTask();
+    }
 
     public IQueryable<T> GetData<T>(bool ignoreAutoIncludes = true, bool ignoreQueryFilters = false, bool trackingChanges = false) where T : BaseEntity
     {
