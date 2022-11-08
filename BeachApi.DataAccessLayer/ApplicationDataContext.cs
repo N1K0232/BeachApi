@@ -85,8 +85,7 @@ public class ApplicationDataContext : AuthenticationDataContext, IApplicationDat
 
         foreach (var entry in entries)
         {
-            BaseEntity baseEntity = entry.Entity as BaseEntity;
-
+            BaseEntity baseEntity = (BaseEntity)entry.Entity;
 
             if (entry.State is EntityState.Added)
             {
