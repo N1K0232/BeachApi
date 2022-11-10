@@ -14,6 +14,7 @@ using BeachApi.BusinessLayer.Services.Interfaces;
 using BeachApi.DataAccessLayer;
 using BeachApi.Documentation;
 using BeachApi.Security;
+using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,6 +23,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -51,6 +53,11 @@ public class Startup
 
         services.AddMapperProfiles();
         services.AddFluentValidation();
+
+        services.AddFluentValidationAutoValidation(options =>
+        {
+            options.DisableDataAnnotationsValidation = true;
+        });
 
         services.AddControllers().AddJsonOptions(options =>
         {
@@ -191,8 +198,8 @@ public class Startup
             return HealthCheckResult.Healthy();
         });
 
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.TryAddScoped<IUserService, UserService>();
+        services.TryAddScoped<IInvoiceService, InvoiceService>();
 
         services.AddHostedService<AuthenticationStartupTask>();
     }
