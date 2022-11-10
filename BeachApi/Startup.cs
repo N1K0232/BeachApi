@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using BeachApi.Authentication;
 using BeachApi.Authentication.Entities;
+using BeachApi.Authentication.Models;
 using BeachApi.Authentication.Settings;
 using BeachApi.Authentication.StartupTasks;
 using BeachApi.Authorization.Handlers;
@@ -200,6 +201,10 @@ public class Startup
 
         services.TryAddScoped<IUserService, UserService>();
         services.TryAddScoped<IInvoiceService, InvoiceService>();
+        services.TryAddScoped<ISupplierService, SupplierService>();
+
+        var adminUserSection = Configuration.GetSection(nameof(AdministratorUser));
+        services.Configure<AdministratorUser>(adminUserSection);
 
         services.AddHostedService<AuthenticationStartupTask>();
     }
