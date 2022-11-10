@@ -76,10 +76,18 @@ public class ApplicationDataContext : AuthenticationDataContext, IApplicationDat
         set.AddRange(entities);
     }
 
-    public Task<int> SaveAsync()
+    public async Task<bool> SaveAsync()
     {
-        using var source = new CancellationTokenSource();
-        return SaveChangesAsync(source.Token);
+        using var tokenSource = new CancellationTokenSource();
+        var cancellationToken = tokenSource.Token;
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+
+        var savedEntries = await SaveChangesAsync(tokenSource.Token).ConfigureAwait(false);
+        return savedEntries > 0;
     }
 
 #pragma warning disable IDE0007 // Use implicit type
