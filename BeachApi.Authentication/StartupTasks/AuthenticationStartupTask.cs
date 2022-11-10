@@ -1,18 +1,23 @@
 ﻿using BeachApi.Authentication.Common;
 using BeachApi.Authentication.Entities;
+using BeachApi.Authentication.Models;
+using BeachApi.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace BeachApi.Authentication.StartupTasks;
 
 public class AuthenticationStartupTask : IHostedService
 {
     private readonly IServiceProvider serviceProvider;
+    private readonly AdministratorUser administratorUser;
 
-    public AuthenticationStartupTask(IServiceProvider serviceProvider)
+    public AuthenticationStartupTask(IServiceProvider serviceProvider, IOptions<AdministratorUser> administratorUserOptions)
     {
         this.serviceProvider = serviceProvider;
+        administratorUser = administratorUserOptions.Value;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -37,22 +42,23 @@ public class AuthenticationStartupTask : IHostedService
 
         var user = new AuthenticationUser
         {
-            FirstName = "Nicola",
-            LastName = "Silvestri",
-            DateOfBirth = DateTime.Parse("22/10/2002"),
-            Email = "ns.nicolasilvestri@gmail.com",
-            UserName = "N1K0232",
-            PhoneNumber = "331 990 7702"
+            FirstName = administratorUser.FirstName,
+            LastName = administratorUser.LastName,
+            DateOfBirth = administratorUser.DateOfBirth,
+            PhoneNumber = administratorUser.PhoneNumber,
+            Email = administratorUser.Email,
+            UserName = administratorUser.UserName
         };
 
-        await RegisterAsync(user, "NicoSilve22!", RoleNames.Administrator, RoleNames.PowerUser, RoleNames.User);
+        var password = StringHasher.GetString(administratorUser.Password);
+        await RegisterAsync(user, password, RoleNames.Administrator, RoleNames.PowerUser, RoleNames.User);
 
-        async Task RegisterAsync(AuthenticationUser administratorUser, string password, params string[] roles)
+        async Task RegisterAsync(AuthenticationUser adminUser, string password, params string[] roles)
         {
-            var dbUser = await userManager.FindByNameAsync(administratorUser.UserName);
+            var dbUser = await userManager.FindByNameAsync(adminUser.UserName);
             if (dbUser == null)
             {
-                var result = await userManager.CreateAsync(administratorUser, password);
+                var result = await userManager.CreateAsync(adminUser, password);
                 if (result.Succeeded)
                 {
                     await userManager.AddToRolesAsync(user, roles);
