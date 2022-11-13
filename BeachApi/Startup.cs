@@ -202,6 +202,7 @@ public class Startup
         services.TryAddScoped<IUserService, UserService>();
         services.TryAddScoped<IInvoiceService, InvoiceService>();
         services.TryAddScoped<ISupplierService, SupplierService>();
+        services.TryAddScoped<ICategoryService, CategoryService>();
 
         var adminUserSection = Configuration.GetSection(nameof(AdministratorUser));
         services.Configure<AdministratorUser>(adminUserSection);
