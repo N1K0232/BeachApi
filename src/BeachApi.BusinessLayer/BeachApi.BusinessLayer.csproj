@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BeachApi.Authentication\BeachApi.Authentication.csproj" />
+    <ProjectReference Include="..\BeachApi.DataAccessLayer\BeachApi.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\BeachApi.StorageProviders\BeachApi.StorageProviders.csproj" />
+  </ItemGroup>
+
+</Project>
