@@ -23,7 +23,7 @@ public class AuthenticationDbContext
         modelBuilder.Entity<ApplicationUser>(builder =>
         {
             builder.Property(user => user.FirstName).HasMaxLength(256).IsRequired();
-            builder.Property(user => user.LastName).HasMaxLength(256).IsRequired();
+            builder.Property(user => user.LastName).HasMaxLength(256).IsRequired(false);
         });
 
         modelBuilder.Entity<ApplicationUserRole>(builder =>
@@ -39,6 +39,15 @@ public class AuthenticationDbContext
                 .WithMany(user => user.UserRoles)
                 .HasForeignKey(userRole => userRole.RoleId)
                 .IsRequired();
+        });
+
+        modelBuilder.Entity<DataProtectionKey>(builder =>
+        {
+            builder.ToTable("DataProtectionKeys");
+            builder.HasKey(key => key.Id);
+
+            builder.Property(key => key.FriendlyName).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+            builder.Property(key => key.Xml).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
         });
     }
 }

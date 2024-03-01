@@ -13,6 +13,7 @@ using BeachApi.Extensions;
 using BeachApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -82,6 +83,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         options.AddAcceptLanguageHeader();
         options.AddDefaultResponse();
     });
+
+    services.AddDataProtection().PersistKeysToDbContext<AuthenticationDbContext>();
 
     services.AddAutoMapper(typeof(UserMapperProfile).Assembly);
 
