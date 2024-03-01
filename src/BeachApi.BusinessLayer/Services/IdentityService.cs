@@ -51,6 +51,7 @@ public class IdentityService : IIdentityService
             new Claim(ClaimTypes.Surname, user.LastName ?? string.Empty),
             new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.GroupSid, user.TenantId?.ToString() ?? string.Empty),
             new Claim(ClaimTypes.SerialNumber, user.SecurityStamp ?? string.Empty)
         }.Union(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
 

@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BeachApi.BusinessLayer\BeachApi.BusinessLayer.csproj" />
+    <ProjectReference Include="..\BeachApi.MultiTenant\BeachApi.MultiTenant.csproj" />
   </ItemGroup>
 
 </Project>

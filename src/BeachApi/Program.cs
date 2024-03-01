@@ -9,12 +9,15 @@ using BeachApi.BusinessLayer.Services;
 using BeachApi.BusinessLayer.Settings;
 using BeachApi.BusinessLayer.StartupServices;
 using BeachApi.Contracts;
+using BeachApi.DataAccessLayer;
 using BeachApi.Extensions;
+using BeachApi.MultiTenant;
 using BeachApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
@@ -91,6 +94,14 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddFluentEmail(sendinblueSettings.FromEmailAddress).AddSendinblueSender();
 
     services.AddSqlServer<AuthenticationDbContext>(configuration.GetConnectionString("AuthConnection"));
+    services.AddDbContext<IDataContext, DataContext>((services, options) =>
+    {
+        var tenantService = services.GetRequiredService<ITenantService>();
+        var tenant = tenantService.Get();
+
+        options.UseSqlServer(tenant.ConnectionString);
+    });
+
     services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     {
         options.User.RequireUniqueEmail = true;
@@ -134,6 +145,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     services.AddScoped<IAuthorizationHandler, UserActiveHandler>();
     services.AddScoped<IUserService, HttpUserService>();
+    services.AddScoped<ITenantService, TenantService>();
 
     services.Scan(scan => scan.FromAssemblyOf<IdentityService>()
         .AddClasses(classes => classes.InNamespaceOf<IdentityService>())

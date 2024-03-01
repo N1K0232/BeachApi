@@ -12,6 +12,8 @@ public class AuthenticationDbContext
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
+    public DbSet<Tenant> Tenants { get; set; }
+
     public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options) : base(options)
     {
     }
@@ -48,6 +50,17 @@ public class AuthenticationDbContext
 
             builder.Property(key => key.FriendlyName).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
             builder.Property(key => key.Xml).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+        });
+
+        modelBuilder.Entity<Tenant>(builder =>
+        {
+            builder.ToTable("Tenants");
+            builder.HasKey(tenant => tenant.Id);
+            builder.Property(tenant => tenant.Id).ValueGeneratedOnAdd().HasDefaultValueSql("newid()");
+
+            builder.Property(tenant => tenant.ConnectionString).HasMaxLength(4000).IsRequired().IsUnicode(false);
+            builder.Property(tenant => tenant.StorageConnectionString).HasMaxLength(4000).IsRequired(false).IsUnicode(false);
+            builder.Property(tenant => tenant.ContainerName).HasMaxLength(256).IsRequired(false).IsUnicode(false);
         });
     }
 }

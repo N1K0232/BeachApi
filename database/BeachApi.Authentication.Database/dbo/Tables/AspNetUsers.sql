@@ -20,7 +20,8 @@
     [RefreshToken]               NVARCHAR (512)     NULL,
     [RefreshTokenExpirationDate] DATETIME           NULL,
 
-    CONSTRAINT [PK_AspNetUsers] PRIMARY KEY CLUSTERED ([Id] ASC)
+    CONSTRAINT [PK_AspNetUsers] PRIMARY KEY CLUSTERED ([Id] ASC),
+    FOREIGN KEY([TenantId]) REFERENCES [dbo].[Tenants]([Id])
 );
 
 GO
