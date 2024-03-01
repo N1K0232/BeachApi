@@ -3,24 +3,28 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeachApi", "src\BeachApi\BeachApi.csproj", "{8654DD2D-8D29-478B-9E59-ECA015C39518}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi", "src\BeachApi\BeachApi.csproj", "{8654DD2D-8D29-478B-9E59-ECA015C39518}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeachApi.Authentication", "src\BeachApi.Authentication\BeachApi.Authentication.csproj", "{31FFBC10-A6EE-4FCF-B4C5-41C72087C4DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi.Authentication", "src\BeachApi.Authentication\BeachApi.Authentication.csproj", "{31FFBC10-A6EE-4FCF-B4C5-41C72087C4DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeachApi.BusinessLayer", "src\BeachApi.BusinessLayer\BeachApi.BusinessLayer.csproj", "{F158DCB0-A106-493F-8717-C6F3C150EFD8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi.BusinessLayer", "src\BeachApi.BusinessLayer\BeachApi.BusinessLayer.csproj", "{F158DCB0-A106-493F-8717-C6F3C150EFD8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeachApi.Contracts", "src\BeachApi.Contracts\BeachApi.Contracts.csproj", "{0F68FFA2-35AD-4CF9-9AD9-EC5212FF6443}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi.Contracts", "src\BeachApi.Contracts\BeachApi.Contracts.csproj", "{0F68FFA2-35AD-4CF9-9AD9-EC5212FF6443}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeachApi.DataAccessLayer", "src\BeachApi.DataAccessLayer\BeachApi.DataAccessLayer.csproj", "{0FE1063B-DF40-42FE-A862-536D9F262952}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi.DataAccessLayer", "src\BeachApi.DataAccessLayer\BeachApi.DataAccessLayer.csproj", "{0FE1063B-DF40-42FE-A862-536D9F262952}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeachApi.Shared", "src\BeachApi.Shared\BeachApi.Shared.csproj", "{9963EF20-10DD-4429-834D-78D197FE94F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi.Shared", "src\BeachApi.Shared\BeachApi.Shared.csproj", "{9963EF20-10DD-4429-834D-78D197FE94F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeachApi.StorageProviders", "src\BeachApi.StorageProviders\BeachApi.StorageProviders.csproj", "{537AD9FB-9A31-4D1C-89D6-EFC83ED02B1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi.StorageProviders", "src\BeachApi.StorageProviders\BeachApi.StorageProviders.csproj", "{537AD9FB-9A31-4D1C-89D6-EFC83ED02B1D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D055CF45-3845-4F2A-901D-CADC091FBE3C}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeachApi.MultiTenant", "src\BeachApi.MultiTenant\BeachApi.MultiTenant.csproj", "{01B663E9-4C09-4D94-9743-075AFD76239E}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "BeachApi.Authentication.Database", "database\BeachApi.Authentication.Database\BeachApi.Authentication.Database.sqlproj", "{497DBCA3-0A55-40FB-BDE6-BABE4CACBD61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +60,16 @@ Global
 		{537AD9FB-9A31-4D1C-89D6-EFC83ED02B1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{537AD9FB-9A31-4D1C-89D6-EFC83ED02B1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{537AD9FB-9A31-4D1C-89D6-EFC83ED02B1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01B663E9-4C09-4D94-9743-075AFD76239E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01B663E9-4C09-4D94-9743-075AFD76239E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01B663E9-4C09-4D94-9743-075AFD76239E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01B663E9-4C09-4D94-9743-075AFD76239E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{497DBCA3-0A55-40FB-BDE6-BABE4CACBD61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{497DBCA3-0A55-40FB-BDE6-BABE4CACBD61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{497DBCA3-0A55-40FB-BDE6-BABE4CACBD61}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{497DBCA3-0A55-40FB-BDE6-BABE4CACBD61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{497DBCA3-0A55-40FB-BDE6-BABE4CACBD61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{497DBCA3-0A55-40FB-BDE6-BABE4CACBD61}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
