@@ -32,6 +32,26 @@ public class IdentityService : IIdentityService
         jwtSettings = jwtSettingsOptions.Value;
     }
 
+    public async Task<Result> DeleteAsync(Guid userId)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is not null)
+        {
+            var userRoles = await userManager.GetRolesAsync(user);
+            if (userRoles.Contains(RoleNames.Administrator) || userRoles.Contains(RoleNames.PowerUser))
+            {
+                return Result.Fail(FailureReasons.ClientError, "Can't delete account", "You can't delete an administrator or a power user");
+            }
+
+            await userManager.RemoveFromRolesAsync(user, userRoles);
+            await userManager.DeleteAsync(user);
+
+            return Result.Ok();
+        }
+
+        return Result.Fail(FailureReasons.ItemNotFound, "No user found");
+    }
+
     public async Task<Result> LockoutAsync(LockoutRequest request)
     {
         var user = await userManager.FindByIdAsync(request.UserId.ToString());
@@ -40,7 +60,7 @@ public class IdentityService : IIdentityService
             var userRoles = await userManager.GetRolesAsync(user);
             if (userRoles.Contains(RoleNames.Administrator) || userRoles.Contains(RoleNames.PowerUser))
             {
-                return Result.Fail(FailureReasons.ClientError, "You can't lockout an administrator or a power user");
+                return Result.Fail(FailureReasons.ClientError, "Unable to lockout", "You can't lockout an administrator or a power user");
             }
 
             user.RefreshToken = null;

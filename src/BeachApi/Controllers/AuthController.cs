@@ -16,6 +16,17 @@ public class AuthController : ControllerBase
         this.identityService = identityService;
     }
 
+    [HttpDelete("{userId:guid}")]
+    [Authorize(Policy = "Administrator")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid userId)
+    {
+        var result = await identityService.DeleteAsync(userId);
+        return HttpContext.CreateResponse(result);
+    }
+
     [HttpPost("lockout")]
     [Authorize(Policy = "Administrator")]
     [ProducesResponseType(StatusCodes.Status200OK)]
