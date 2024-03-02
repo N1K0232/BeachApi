@@ -8,12 +8,16 @@ using BeachApi.BusinessLayer.MapperProfiles;
 using BeachApi.BusinessLayer.Services;
 using BeachApi.BusinessLayer.Settings;
 using BeachApi.BusinessLayer.StartupServices;
+using BeachApi.BusinessLayer.Validations;
 using BeachApi.Contracts;
 using BeachApi.DataAccessLayer;
 using BeachApi.Extensions;
 using BeachApi.MultiTenant;
 using BeachApi.Services;
 using BeachApi.StorageProviders.Extensions;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -88,13 +92,22 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
         options.AddAcceptLanguageHeader();
         options.AddDefaultResponse();
+    })
+    .AddFluentValidationRulesToSwagger(options =>
+    {
+        options.SetNotNullableIfMinLengthGreaterThenZero = true;
     });
 
-    services.AddDataProtection().PersistKeysToDbContext<AuthenticationDbContext>();
-
     services.AddAutoMapper(typeof(UserMapperProfile).Assembly);
+    services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+
+    services.AddFluentValidationAutoValidation(options =>
+    {
+        options.DisableDataAnnotationsValidation = true;
+    });
 
     services.AddFluentEmail(sendinblueSettings.FromEmailAddress).AddSendinblueSender();
+    services.AddDataProtection().PersistKeysToDbContext<AuthenticationDbContext>();
 
     services.AddSqlServer<AuthenticationDbContext>(configuration.GetConnectionString("AuthConnection"));
     services.AddDbContext<IDataContext, DataContext>((services, options) =>
