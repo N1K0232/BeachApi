@@ -16,6 +16,17 @@ public class AuthController : ControllerBase
         this.identityService = identityService;
     }
 
+    [HttpPost("lockout")]
+    [Authorize(Policy = "Administrator")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Lockout([FromBody] LockoutRequest request)
+    {
+        var result = await identityService.LockoutAsync(request);
+        return HttpContext.CreateResponse(result, StatusCodes.Status200OK);
+    }
+
     [HttpPost("login")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]

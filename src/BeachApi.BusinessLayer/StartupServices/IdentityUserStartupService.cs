@@ -2,7 +2,6 @@
 using BeachApi.Authentication.Entities;
 using BeachApi.Authentication.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -60,22 +59,8 @@ public class IdentityUserStartupService : IHostedService
         }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        using var scope = serviceProvider.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-        var users = await userManager.Users.ToListAsync(cancellationToken);
-        foreach (var user in users)
-        {
-            var lockedOut = await userManager.IsLockedOutAsync(user);
-            if (lockedOut)
-            {
-                user.RefreshToken = null;
-                user.RefreshTokenExpirationDate = null;
-
-                await userManager.UpdateAsync(user);
-            }
-        }
+        return Task.CompletedTask;
     }
 }
