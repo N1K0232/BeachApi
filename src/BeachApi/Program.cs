@@ -1,4 +1,7 @@
+using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
+using Asp.Versioning.ApiExplorer;
 using BeachApi.Authentication;
 using BeachApi.Authentication.Entities;
 using BeachApi.Authentication.Handlers;
@@ -15,6 +18,7 @@ using BeachApi.Extensions;
 using BeachApi.MultiTenant;
 using BeachApi.Services;
 using BeachApi.StorageProviders.Extensions;
+using BeachApi.Swagger;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
@@ -23,13 +27,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using OperationResults.AspNetCore;
 using Serilog;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using TinyHelpers.AspNetCore.Extensions;
 using TinyHelpers.AspNetCore.Swagger;
+using TinyHelpers.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigureServices(builder.Services, builder.Configuration, builder.Host, builder.Environment);
@@ -43,6 +51,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 {
     var appSettings = services.ConfigureAndGet<AppSettings>(configuration, nameof(AppSettings));
     var jwtSettings = services.ConfigureAndGet<JwtSettings>(configuration, nameof(JwtSettings));
+
+    var swaggerSettings = services.ConfigureAndGet<SwaggerSettings>(configuration, nameof(SwaggerSettings));
     var sendinblueSettings = services.ConfigureAndGet<SendinblueSettings>(configuration, nameof(SendinblueSettings));
 
     services.Configure<AdministratorUser>(configuration.GetSection("AdministratorUserOptions"));
@@ -62,41 +72,88 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddMemoryCache();
     services.AddRequestLocalization(appSettings.SupportedCultures);
 
-    services.AddControllers();
+    services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+            options.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
     services.AddEndpointsApiExplorer();
 
-    services.AddSwaggerGen(options =>
+    services.AddApiVersioning(options =>
     {
-        options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
-        {
-            In = ParameterLocation.Header,
-            Description = "Insert JWT token with the \"Bearer \" prefix",
-            Name = HeaderNames.Authorization,
-            Type = SecuritySchemeType.ApiKey
-        });
-
-        options.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = JwtBearerDefaults.AuthenticationScheme
-                    }
-                },
-                Array.Empty<string>()
-            }
-        });
-
-        options.AddAcceptLanguageHeader();
-        options.AddDefaultResponse();
+        options.ReportApiVersions = true;
     })
-    .AddFluentValidationRulesToSwagger(options =>
+    .AddMvc()
+    .AddApiExplorer(options =>
     {
-        options.SetNotNullableIfMinLengthGreaterThenZero = true;
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
     });
+
+    if (swaggerSettings.Enabled)
+    {
+        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
+        services.AddSwaggerGen(options =>
+        {
+            options.AddAcceptLanguageHeader();
+            options.AddDefaultResponse();
+
+            options.OperationFilter<AuthResponseOperationFilter>();
+            options.OperationFilter<SwaggerDefaultValues>();
+
+            options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Insert JWT token with the \"Bearer \" prefix",
+                Name = HeaderNames.Authorization,
+                Type = SecuritySchemeType.ApiKey
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = JwtBearerDefaults.AuthenticationScheme
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+            options.MapType<DateTime>(() => new OpenApiSchema
+            {
+                Type = "string",
+                Format = "date-time",
+                Example = new OpenApiString(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
+            });
+
+            options.MapType<DateOnly>(() => new OpenApiSchema
+            {
+                Type = "string",
+                Format = "date",
+                Example = new OpenApiString(DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd"))
+            });
+
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            options.IncludeXmlComments(xmlPath);
+
+            options.CustomOperationIds(api => $"{api.ActionDescriptor.RouteValues["controller"]}_{api.ActionDescriptor.RouteValues["action"]}");
+            options.UseAllOfToExtendReferenceSchemas();
+        })
+        .AddFluentValidationRulesToSwagger(options =>
+        {
+            options.SetNotNullableIfMinLengthGreaterThenZero = true;
+        });
+    }
 
     services.AddAutoMapper(typeof(UserMapperProfile).Assembly);
     services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
@@ -208,13 +265,27 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
 void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IServiceProvider services)
 {
+    var appSettings = services.GetRequiredService<IOptions<AppSettings>>().Value;
+    var swaggerSettings = services.GetRequiredService<IOptions<SwaggerSettings>>().Value;
+
     app.UseHttpsRedirection();
     app.UseRequestLocalization();
 
-    if (environment.IsDevelopment())
+    environment.ApplicationName = appSettings.ApplicationName;
+
+    if (swaggerSettings.Enabled)
     {
+        var apiVersionDescriptionProvider = services.GetRequiredService<IApiVersionDescriptionProvider>();
+
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(options =>
+        {
+            foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+            {
+                options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName);
+                options.RoutePrefix = string.Empty;
+            }
+        });
     }
 
     app.UseRouting();
