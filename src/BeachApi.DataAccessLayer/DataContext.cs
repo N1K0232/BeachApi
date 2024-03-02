@@ -104,23 +104,10 @@ public class DataContext : DbContext, IDataContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        var tenantEntities = modelBuilder.Model.GetEntityTypes()
-            .Where(t => typeof(TenantEntity).IsAssignableFrom(t.ClrType)).ToList();
+        var entities = modelBuilder.Model.GetEntityTypes()
+            .Where(t => typeof(BaseEntity).IsAssignableFrom(t.ClrType)).ToList();
 
-        foreach (var type in tenantEntities.Select(t => t.ClrType))
-        {
-            var methods = SetGlobalQueryFiltersMethod(type);
-            foreach (var method in methods)
-            {
-                var genericMethod = method.MakeGenericMethod(type);
-                genericMethod.Invoke(this, new object[] { modelBuilder });
-            }
-        }
-
-        var deletableEntities = modelBuilder.Model.GetEntityTypes()
-            .Where(t => typeof(TenantEntity).IsAssignableFrom(t.ClrType)).ToList();
-
-        foreach (var type in deletableEntities.Select(t => t.ClrType))
+        foreach (var type in entities.Select(t => t.ClrType))
         {
             var methods = SetGlobalQueryFiltersMethod(type);
             foreach (var method in methods)
@@ -140,6 +127,11 @@ public class DataContext : DbContext, IDataContext
         if (typeof(TenantEntity).IsAssignableFrom(type))
         {
             result.Add(setQueryFilterOnTenantEntity);
+        }
+
+        if (typeof(DeletableEntity).IsAssignableFrom(type))
+        {
+            result.Add(setQueryFilterOnDeletableEntity);
         }
 
         return result;
