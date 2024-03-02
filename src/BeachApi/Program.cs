@@ -13,6 +13,7 @@ using BeachApi.DataAccessLayer;
 using BeachApi.Extensions;
 using BeachApi.MultiTenant;
 using BeachApi.Services;
+using BeachApi.StorageProviders.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -36,6 +37,7 @@ await app.RunAsync();
 
 void ConfigureServices(IServiceCollection services, IConfiguration configuration, IHostBuilder host, IWebHostEnvironment environment)
 {
+    var appSettings = services.ConfigureAndGet<AppSettings>(configuration, nameof(AppSettings));
     var jwtSettings = services.ConfigureAndGet<JwtSettings>(configuration, nameof(JwtSettings));
     var sendinblueSettings = services.ConfigureAndGet<SendinblueSettings>(configuration, nameof(SendinblueSettings));
 
@@ -54,6 +56,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     services.AddHttpContextAccessor();
     services.AddMemoryCache();
+    services.AddRequestLocalization(appSettings.SupportedCultures);
 
     services.AddControllers();
     services.AddEndpointsApiExplorer();
@@ -147,6 +150,26 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddScoped<IUserService, HttpUserService>();
     services.AddScoped<ITenantService, TenantService>();
 
+    if (environment.IsDevelopment())
+    {
+        services.AddFileSystemStorage(options =>
+        {
+            options.SiteRootFolder = environment.ContentRootPath;
+            options.StorageFolder = "D:\\BeachApi\\attachments";
+        });
+    }
+    else
+    {
+        services.AddAzureStorage((services, options) =>
+        {
+            var tenantService = services.GetRequiredService<ITenantService>();
+            var tenant = tenantService.Get();
+
+            options.ConnectionString = tenant.StorageConnectionString;
+            options.ContainerName = tenant.ContainerName;
+        });
+    }
+
     services.Scan(scan => scan.FromAssemblyOf<IdentityService>()
         .AddClasses(classes => classes.InNamespaceOf<IdentityService>())
         .AsImplementedInterfaces()
@@ -159,6 +182,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IServiceProvider services)
 {
     app.UseHttpsRedirection();
+    app.UseRequestLocalization();
 
     if (environment.IsDevelopment())
     {
