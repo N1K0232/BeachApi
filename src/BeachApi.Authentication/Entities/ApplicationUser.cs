@@ -8,6 +8,8 @@ public class ApplicationUser : IdentityUser<Guid>
 
     public string LastName { get; set; }
 
+    public string ProfilePhoto { get; set; }
+
     public string RefreshToken { get; set; }
 
     public DateTime? RefreshTokenExpirationDate { get; set; }
