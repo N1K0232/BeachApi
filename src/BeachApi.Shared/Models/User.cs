@@ -1,6 +1,8 @@
-﻿namespace BeachApi.Shared.Models;
+﻿using BeachApi.Shared.Models.Common;
 
-public class User
+namespace BeachApi.Shared.Models;
+
+public class User : BaseObject
 {
     public string FirstName { get; set; } = null!;
 
