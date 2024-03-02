@@ -233,7 +233,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     services.AddScoped<IAuthorizationHandler, UserActiveHandler>();
     services.AddScoped<IUserService, HttpUserService>();
+
     services.AddScoped<ITenantService, TenantService>();
+    services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
     if (environment.IsDevelopment())
     {
