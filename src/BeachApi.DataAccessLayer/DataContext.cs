@@ -67,12 +67,28 @@ public class DataContext : DbContext, IDataContext
         foreach (var entry in entries.Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
         {
             var baseEntity = entry.Entity as BaseEntity;
-            if (entry.State is EntityState.Added or EntityState.Modified)
+            if (entry.State is EntityState.Added)
             {
                 if (baseEntity is TenantEntity tenantEntity)
                 {
                     tenantEntity.TenantId = tenantId;
                 }
+            }
+
+            if (entry.State is EntityState.Modified)
+            {
+                if (baseEntity is TenantEntity tenantEntity)
+                {
+                    tenantEntity.TenantId = tenantId;
+                }
+
+                if (baseEntity is DeletableEntity deletableEntity)
+                {
+                    deletableEntity.IsDeleted = false;
+                    deletableEntity.DeletedDate = null;
+                }
+
+                baseEntity.LastModifiedDate = DateTime.UtcNow;
             }
 
             if (entry.State is EntityState.Deleted)
