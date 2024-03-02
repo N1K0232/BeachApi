@@ -157,6 +157,20 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         policyBuilder.Requirements.Add(new UserActiveRequirement());
 
         options.FallbackPolicy = options.DefaultPolicy = policyBuilder.Build();
+
+        options.AddPolicy("Administrator", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireRole(RoleNames.Administrator, RoleNames.PowerUser);
+            policy.Requirements.Add(new UserActiveRequirement());
+        });
+
+        options.AddPolicy("UserActive", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireRole(RoleNames.User);
+            policy.Requirements.Add(new UserActiveRequirement());
+        });
     });
 
     services.AddScoped<IAuthorizationHandler, UserActiveHandler>();
