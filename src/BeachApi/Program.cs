@@ -7,6 +7,7 @@ using BeachApi.Authentication.Entities;
 using BeachApi.Authentication.Handlers;
 using BeachApi.Authentication.Models;
 using BeachApi.Authentication.Requirements;
+using BeachApi.BusinessLayer.BackgroundServices;
 using BeachApi.BusinessLayer.MapperProfiles;
 using BeachApi.BusinessLayer.Services;
 using BeachApi.BusinessLayer.Settings;
@@ -261,6 +262,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     services.AddHostedService<IdentityRoleStartupService>();
     services.AddHostedService<IdentityUserStartupService>();
+    services.AddHostedService<UserBackgroundService>();
 }
 
 void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IServiceProvider services)
