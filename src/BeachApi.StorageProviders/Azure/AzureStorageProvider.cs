@@ -39,7 +39,7 @@ internal class AzureStorageProvider : IStorageProvider
 
     public async Task UploadAsync(Stream stream, string path, bool overwrite = false)
     {
-        var blobClient = await GetBlobClientAsync(path);
+        var blobClient = await GetBlobClientAsync(path, true);
         if (!overwrite)
         {
             var blobExists = await blobClient.ExistsAsync();
