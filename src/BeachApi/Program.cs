@@ -280,6 +280,7 @@ void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IServic
     if (swaggerSettings.Enabled)
     {
         var apiVersionDescriptionProvider = services.GetRequiredService<IApiVersionDescriptionProvider>();
+        app.UseMiddleware<SwaggerAuthenticationMiddleware>();
 
         app.UseSwagger();
         app.UseSwaggerUI(options =>
